@@ -286,6 +286,8 @@ template<class T> class RosFilter
     //!
     bool validateFilterOutput(const nav_msgs::Odometry &message);
 
+    void imuFuckMeCallback(const sensor_msgs::Imu::ConstPtr &message);
+
   protected:
     //! @brief Finds the latest filter state before the given timestamp and makes it the current state again.
     //!
@@ -440,6 +442,8 @@ template<class T> class RosFilter
     //! to true, the filter does the same, but then also predicts up to the current time step.
     //!
     bool predictToCurrentTime_;
+
+    
 
     //! @brief Whether or not we print diagnostic messages to the /diagnostics topic
     //!
@@ -722,6 +726,12 @@ template<class T> class RosFilter
     //! @brief optional signaling diagnostic frequency
     //!
     std::unique_ptr<diagnostic_updater::HeaderlessTopicDiagnostic> freqDiag_;
+
+    geometry_msgs::Quaternion fuck_me_quat_;
+
+    ros::Subscriber fuckMeImuSub_;
+
+    bool useimutf_;
 };
 
 }  // namespace RobotLocalization

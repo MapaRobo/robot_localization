@@ -1,3 +1,5 @@
+# TODO
+# navsattransform change back
 cmake_minimum_required(VERSION 3.0.2)
 project(robot_localization)
 
@@ -138,7 +140,8 @@ add_library(robot_localization_estimator src/robot_localization_estimator.cpp)
 add_library(ros_robot_localization_listener src/ros_robot_localization_listener.cpp)
 add_library(ros_filter_utilities src/ros_filter_utilities.cpp)
 add_library(ros_filter src/ros_filter.cpp)
-add_library(navsat_transform src/navsat_transform.cpp)
+#Used to be: add_library(navsat_transform src/navsat_transform.cpp)
+add_library(navsat_transform src/hacknavsat_transform.cpp)
 add_library(ekf_localization_nodelet src/ekf_localization_nodelet.cpp)
 add_library(ukf_localization_nodelet src/ukf_localization_nodelet.cpp)
 add_library(navsat_transform_nodelet src/navsat_transform_nodelet.cpp)
