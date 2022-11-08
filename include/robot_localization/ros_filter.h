@@ -286,7 +286,7 @@ template<class T> class RosFilter
     //!
     bool validateFilterOutput(const nav_msgs::Odometry &message);
 
-    void imuFuckMeCallback(const sensor_msgs::Imu::ConstPtr &message);
+    void pureImuCallback(const sensor_msgs::Imu::ConstPtr &message);
 
   protected:
     //! @brief Finds the latest filter state before the given timestamp and makes it the current state again.

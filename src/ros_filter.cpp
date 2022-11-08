@@ -151,7 +151,7 @@ namespace RobotLocalization
     pure_imu_quat_.y = 0;
     pure_imu_quat_.z = 0;
     pure_imu_quat_.w = 1;
-    pure_imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("imu/bno055/data", 1, &RosFilter<T>::imuFuckMeCallback, this);
+    pure_imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("imu/bno055/data", 1, &RosFilter<T>::pureImuCallback, this);
 
     // Optional acceleration publisher
     if (publishAcceleration_)
@@ -3223,9 +3223,9 @@ namespace RobotLocalization
            !std::isnan(message.twist.twist.angular.z) && !std::isinf(message.twist.twist.angular.z);
   }
 
-  //TODO remove this shit
+  //TODO remove this
   template<typename T>
-  void RosFilter<T>::imuFuckMeCallback(const sensor_msgs::Imu::ConstPtr &message)
+  void RosFilter<T>::pureImuCallback(const sensor_msgs::Imu::ConstPtr &message)
   {
     Eigen::Quaternionf q;
     // q.x() = message->orientation.x;
