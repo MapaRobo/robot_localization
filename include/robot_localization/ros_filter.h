@@ -286,6 +286,8 @@ template<class T> class RosFilter
     //!
     bool validateFilterOutput(const nav_msgs::Odometry &message);
 
+    void imuFuckMeCallback(const sensor_msgs::Imu::ConstPtr &message);
+
   protected:
     //! @brief Finds the latest filter state before the given timestamp and makes it the current state again.
     //!
@@ -722,7 +724,12 @@ template<class T> class RosFilter
     //! @brief optional signaling diagnostic frequency
     //!
     std::unique_ptr<diagnostic_updater::HeaderlessTopicDiagnostic> freqDiag_;
-};
+
+    // Local variables for using only the data from the IMU for orientation output from the filter
+    geometry_msgs::Quaternion pure_imu_quat_;
+
+    ros::Subscriber pure_imu_sub_;
+  };
 
 }  // namespace RobotLocalization
 

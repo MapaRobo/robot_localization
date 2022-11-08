@@ -36,6 +36,7 @@
 #include "robot_localization/ukf.h"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf/tf.h>
 
 #include <algorithm>
 #include <iostream>
@@ -144,6 +145,13 @@ namespace RobotLocalization
 
     // Publisher
     positionPub_ = nh_.advertise<nav_msgs::Odometry>("odometry/filtered", 20);
+
+    // TODO Remove this subscriber
+    pure_imu_quat_.x = 0;
+    pure_imu_quat_.y = 0;
+    pure_imu_quat_.z = 0;
+    pure_imu_quat_.w = 1;
+    pure_imu_sub_ = nh_.subscribe<sensor_msgs::Imu>("imu/bno055/data", 1, &RosFilter<T>::imuFuckMeCallback, this);
 
     // Optional acceleration publisher
     if (publishAcceleration_)
@@ -391,10 +399,14 @@ namespace RobotLocalization
       message.pose.pose.position.x = state(StateMemberX);
       message.pose.pose.position.y = state(StateMemberY);
       message.pose.pose.position.z = state(StateMemberZ);
-      message.pose.pose.orientation.x = quat.x();
-      message.pose.pose.orientation.y = quat.y();
-      message.pose.pose.orientation.z = quat.z();
-      message.pose.pose.orientation.w = quat.w();
+      //message.pose.pose.orientation.x = quat.x();
+      //message.pose.pose.orientation.y = quat.y();
+      //message.pose.pose.orientation.z = quat.z();
+      //message.pose.pose.orientation.w = quat.w();
+      message.pose.pose.orientation.x = pure_imu_quat_.x;
+      message.pose.pose.orientation.y = pure_imu_quat_.y;
+      message.pose.pose.orientation.z = pure_imu_quat_.z;
+      message.pose.pose.orientation.w = pure_imu_quat_.w;
       message.twist.twist.linear.x = state(StateMemberVx);
       message.twist.twist.linear.y = state(StateMemberVy);
       message.twist.twist.linear.z = state(StateMemberVz);
@@ -1909,7 +1921,16 @@ namespace RobotLocalization
       worldBaseLinkTransMsg_.transform.translation.x = filteredPosition.pose.pose.position.x;
       worldBaseLinkTransMsg_.transform.translation.y = filteredPosition.pose.pose.position.y;
       worldBaseLinkTransMsg_.transform.translation.z = filteredPosition.pose.pose.position.z;
-      worldBaseLinkTransMsg_.transform.rotation = filteredPosition.pose.pose.orientation;
+      // worldBaseLinkTransMsg_.transform.rotation = filteredPosition.pose.pose.orientation;
+      //worldBaseLinkTransMsg_.transform.translation.x = 0;
+      //worldBaseLinkTransMsg_.transform.translation.y = 0;
+      //worldBaseLinkTransMsg_.transform.translation.z = 0;
+      geometry_msgs::Quaternion zeroed_quat;
+      zeroed_quat.x = 0;
+      zeroed_quat.y = 0;
+      zeroed_quat.z = 0;
+      zeroed_quat.w = 1;
+      worldBaseLinkTransMsg_.transform.rotation = pure_imu_quat_;
 
       // the filteredPosition is the message containing the state and covariances: nav_msgs Odometry
 
@@ -3200,6 +3221,37 @@ namespace RobotLocalization
            !std::isnan(message.twist.twist.angular.x) && !std::isinf(message.twist.twist.angular.x) &&
            !std::isnan(message.twist.twist.angular.y) && !std::isinf(message.twist.twist.angular.y) &&
            !std::isnan(message.twist.twist.angular.z) && !std::isinf(message.twist.twist.angular.z);
+  }
+
+  //TODO remove this shit
+  template<typename T>
+  void RosFilter<T>::imuFuckMeCallback(const sensor_msgs::Imu::ConstPtr &message)
+  {
+    Eigen::Quaternionf q;
+    // q.x() = message->orientation.x;
+    // q.y() = message->orientation.y;
+    // q.z() = message->orientation.z;
+    // q.w() = message->orientation.w;
+
+    // auto euler = q.toRotationMatrix().eulerAngles(0, 1, 2);
+
+    geometry_msgs::Quaternion quat;
+    quat.x = message->orientation.x;
+    quat.y = message->orientation.y;
+    quat.z = message->orientation.z;
+    quat.w = message->orientation.w;
+
+    float yaw = tf::getYaw(quat);
+
+    float roll = 0, pitch = 0;   
+    q = Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX())
+    * Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY())
+    * Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ());
+
+    pure_imu_quat_.x = q.x();
+    pure_imu_quat_.y = q.y();
+    pure_imu_quat_.z = q.z();
+    pure_imu_quat_.w = q.w();
   }
 
   template<typename T>
